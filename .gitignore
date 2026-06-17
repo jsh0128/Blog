@@ -35,3 +35,8 @@ yarn-debug.log*
 yarn-error.log*
 
 .moai
+.claude
+CLAUDE.md
+.mcp.json
+.claudeignore
+.git_hooks/
