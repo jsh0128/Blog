@@ -30,7 +30,6 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/pages/**',
     '!src/test-utils/**',
-    '!src/**/*.d.ts',
   ],
   coverageThreshold: {
     global: { lines: 80 },

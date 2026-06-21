@@ -65,6 +65,14 @@ describe('AuthTypeCheck middleware', () => {
       } as any
       await expect(validateAuth(mockReq)).rejects.toThrow('Invalid token')
     })
+
+    it('[BUG] throws when no authorization header (AuthTypeCheck.ts:46 uses module-level response singleton)', async () => {
+      // Known bug: line 46 calls handleResponse(response, 404, ...) where `response` is the
+      // Express module-level singleton imported at the top, not the actual request's response.
+      // In production this silently sends 404 to the wrong object; in test env it throws.
+      const mockReq = { headers: {} } as any
+      await expect(validateAuth(mockReq)).rejects.toThrow()
+    })
   })
 
   describe('validateUser', () => {
@@ -90,6 +98,15 @@ describe('AuthTypeCheck middleware', () => {
         headers: { authorization: 'Bearer bad-token' },
       } as any
 
+      await validateUser(mockReq, mockRes, mockNext)
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockNext).not.toHaveBeenCalled()
+    })
+
+    it('[BUG] returns 500 instead of 404 when no authorization header', async () => {
+      // Bug cascade: validateAuth (line 46) throws due to module-level response singleton →
+      // validateUser catch block surfaces it as 500 instead of the intended 404 not-found
+      const mockReq = { headers: {}, user: null } as any
       await validateUser(mockReq, mockRes, mockNext)
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockNext).not.toHaveBeenCalled()

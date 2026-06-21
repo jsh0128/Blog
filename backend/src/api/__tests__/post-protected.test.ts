@@ -66,6 +66,23 @@ describe('Post API routes', () => {
     })
   })
 
+  describe('admin authorization boundary', () => {
+    it('returns 403 when validateAdmin rejects the request', async () => {
+      // Guards the invariant: post write routes must be blocked for non-admins.
+      // Without this test, removing validateAdmin from the router would not fail any test.
+      const { validateAdmin } = require('../../lib/middleware/AuthTypeCheck')
+      validateAdmin.mockImplementationOnce((_req: any, res: any, _next: any) => {
+        res.status(403).send({ message: '권한없음' })
+      })
+
+      const res = await request(app)
+        .post('/post/create')
+        .send({ title: 'Test', content: 'Content', introduction: 'Intro' })
+
+      expect(res.status).toBe(403)
+    })
+  })
+
   describe('POST /post/create', () => {
     it('creates post successfully without categories', async () => {
       mockSave.mockResolvedValueOnce({ idx: 1 })

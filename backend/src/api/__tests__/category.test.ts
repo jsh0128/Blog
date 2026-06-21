@@ -63,25 +63,33 @@ describe('Category API routes', () => {
   })
 
   describe('GET /category/searchPostCategory', () => {
-    it('returns posts for a valid category', async () => {
+    it('returns posts for a valid category (multi-post fixture)', async () => {
+      // Handler flow per post: findOne(post) → then outer findOne(user) + inner findOne(category)
+      // Using 2 posts to guard against fixture-size-dependent stub exhaustion
       const mockCategory = { idx: 1, category: 'Technology' }
-      const mockPosts = [{ fk_post_idx: 1, fk_category_idx: 1 }]
-      const mockPost = {
-        idx: 1,
-        title: 'Post 1',
-        fk_user_email: 'user@test.com',
-        categories: [],
-        user_name: 'User',
-      }
+      const mockPost1 = { idx: 1, title: 'Post 1', fk_user_email: 'user@test.com', categories: [], user_name: 'User' }
+      const mockPost2 = { idx: 2, title: 'Post 2', fk_user_email: 'user@test.com', categories: [], user_name: 'User' }
+      const mockUser = { name: 'User', email: 'user@test.com' }
+      const mockCategoryResult = { idx: 1, category: 'Technology' }
 
       mockFindOne
-        .mockResolvedValueOnce(mockCategory) // checkCategory
-        .mockResolvedValueOnce(mockPost)     // postRepository.findOne for each post
-        .mockResolvedValueOnce({ name: 'User', email: 'user@test.com' }) // userRepository.findOne
+        .mockResolvedValueOnce(mockCategory)       // categoryRepository.findOne (checkCategory)
+        .mockResolvedValueOnce(mockPost1)          // postRepository.findOne (loop post 1)
+        .mockResolvedValueOnce(mockPost2)          // postRepository.findOne (loop post 2)
+        .mockResolvedValueOnce(mockUser)           // userRepository.findOne (post 1's user)
+        .mockResolvedValueOnce(mockCategoryResult) // categoryRepository.findOne (post 1's category)
+        .mockResolvedValueOnce(mockUser)           // userRepository.findOne (post 2's user)
+        .mockResolvedValueOnce(mockCategoryResult) // categoryRepository.findOne (post 2's category)
 
       mockFind
-        .mockResolvedValueOnce(mockPosts) // postCategoryRepository.find
-        .mockResolvedValueOnce([{ idx: 1, fk_post_idx: 1, fk_category_idx: 1 }]) // postCategories
+        .mockResolvedValueOnce([                                        // postCategoryRepository.find (posts in category)
+          { fk_post_idx: 1, fk_category_idx: 1 },
+          { fk_post_idx: 2, fk_category_idx: 1 },
+        ])
+        .mockResolvedValueOnce([                                        // postCategoryRepository.find (all postCategories)
+          { idx: 1, fk_post_idx: 1, fk_category_idx: 1 },
+          { idx: 2, fk_post_idx: 2, fk_category_idx: 1 },
+        ])
 
       const res = await request(app).get('/category/searchPostCategory?category=1')
       expect(res.status).toBe(200)
