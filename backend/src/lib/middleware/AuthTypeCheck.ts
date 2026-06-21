@@ -21,7 +21,7 @@ export const validateAdmin = async (
     request.user = user;
     next();
   } catch (err) {
-    console.log("User Error1   " + err);
+    console.log("User Error   " + err);
     handleResponse(response, 500, "서버 에러입니다");
   }
 };
@@ -35,12 +35,13 @@ export const validateUser = async (
     request.user = user;
     next();
   } catch (err) {
-    console.log("User Error2   " + err);
+    console.log("User Error   " + err);
     handleResponse(response, 500, "서버 에러입니다");
   }
 };
 export const validateAuth = async (request: Request) => {
   const access_token = request.headers["authorization"];
+  console.log(request.headers);
   if (!access_token) {
     handleResponse(response, 404, "토큰을 찾을 수 없습니다");
     return;

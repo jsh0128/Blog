@@ -1,6 +1,6 @@
 ## Frontend
 
-React, Next, Redux, Redux-Saga, TypeScript
+React, Next, React-query, TypeScript, Styled-components
 
 ## Backend
 

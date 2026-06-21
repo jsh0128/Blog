@@ -13,7 +13,6 @@ export default async (request: Request, response: Response) => {
     });
 
     if (!findCategory) {
-      console.log("없는 카테고리");
       handleResponse(response, 404, "없는 카테고리입니다.");
       return;
     }

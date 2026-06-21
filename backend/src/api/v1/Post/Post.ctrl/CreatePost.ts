@@ -11,7 +11,14 @@ export default async (request: AuthRequest, response: Response) => {
   try {
     const { title, content, introduction, categories, preview_img } =
       request.body;
+
     const user: User = request.user;
+
+    if (!user) {
+      console.log("로그인이 필요합니다");
+
+      return handleResponse(response, 403, "로그인이 필요합니다");
+    }
 
     const postRepository: Repository<Post> = getRepository(Post);
     const categoryRepository: Repository<Category> = getRepository(Category);

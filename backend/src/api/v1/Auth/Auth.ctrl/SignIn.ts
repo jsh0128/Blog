@@ -43,7 +43,9 @@ export default async (request: Request, response: Response) => {
       handleResponse(response, 200, "로그인 성공하셨습니다", token);
       return;
     }
-  } catch {
+  } catch (err) {
+    console.log(err);
+
     console.log("서버 오류입니다.");
     handleResponse(response, 500, "서버 오류입니다.");
     return;
